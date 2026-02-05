@@ -1,0 +1,9 @@
+{
+  "model": "gpt-5.2-codex",
+  "timeout": 300,
+  "scoreThreshold": 85,
+  "lang": "en",
+  "saveHistory": true,
+  "bypassApproval": true,
+  "contextLines": 50
+}

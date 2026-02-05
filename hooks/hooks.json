@@ -1,0 +1,26 @@
+{
+  "hooks": [
+    {
+      "matcher": "Stop",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/plugins/codex-reviewer/hooks/stop-review.sh",
+          "timeout": 300,
+          "statusMessage": "🔍 Codex is reviewing..."
+        }
+      ]
+    },
+    {
+      "matcher": "PostToolUse",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/plugins/codex-reviewer/hooks/post-edit-context.sh",
+          "timeout": 30,
+          "statusMessage": "📝 Recording change context..."
+        }
+      ]
+    }
+  ]
+}

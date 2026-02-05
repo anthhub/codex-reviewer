@@ -1,0 +1,13 @@
+# Review history (generated)
+review-history/
+
+# Temp files
+*.tmp
+*.log
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
