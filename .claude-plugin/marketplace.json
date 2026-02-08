@@ -16,7 +16,7 @@
         "name": "anthhub",
         "email": "nicktimebreak@gmail.com"
       },
-      "source": ".",
+      "source": "./plugins/codex-reviewer",
       "category": "productivity"
     }
   ]
