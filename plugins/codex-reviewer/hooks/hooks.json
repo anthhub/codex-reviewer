@@ -1,3 +1,4 @@
 {
-  "hooks": []
+  "description": "Codex Reviewer hooks (none active - reviews triggered via /cx command)",
+  "hooks": {}
 }
