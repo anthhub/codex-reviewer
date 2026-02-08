@@ -1,0 +1,23 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "codex-reviewer",
+  "version": "1.0.0",
+  "description": "Dual AI cross-validation marketplace - Codex (GPT) reviews Claude Code output",
+  "owner": {
+    "name": "anthhub",
+    "email": "nicktimebreak@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "codex-reviewer",
+      "description": "Dual AI cross-validation using Codex CLI as a Senior Reviewer for Claude Code",
+      "version": "1.0.0",
+      "author": {
+        "name": "anthhub",
+        "email": "nicktimebreak@gmail.com"
+      },
+      "source": ".",
+      "category": "productivity"
+    }
+  ]
+}
