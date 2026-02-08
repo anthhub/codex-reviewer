@@ -7,4 +7,4 @@ allowed-tools: Bash
 
 Execute health check to verify configuration and dependencies:
 
-!bash "$CLAUDE_PROJECT_DIR/.claude/plugins/codex-reviewer/check-health.sh" $ARGUMENTS
+!bash SCRIPT="$(find ~/.claude/plugins -name 'check-health.sh' -path '*/codex-reviewer/*' 2>/dev/null | head -1)"; [ -z "$SCRIPT" ] && SCRIPT="$CLAUDE_PROJECT_DIR/.claude/plugins/codex-reviewer/check-health.sh"; bash "$SCRIPT" $ARGUMENTS

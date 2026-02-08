@@ -11,7 +11,7 @@ Invoke the Task tool (`general-purpose` subagent). Pass the full content of the 
 
 - `{{ARGUMENTS}}` → the raw text of `$ARGUMENTS` above
 - `{{PROJECT_DIR}}` → the actual value of `$CLAUDE_PROJECT_DIR`
-- `{{SCRIPT_PATH}}` → the actual value of `$CLAUDE_PROJECT_DIR/.claude/plugins/codex-reviewer/codex-reviewer.sh`
+- `{{SCRIPT_PATH}}` → find `codex-reviewer.sh` by running: `find ~/.claude/plugins -name 'codex-reviewer.sh' -path '*/codex-reviewer/*' 2>/dev/null | head -1`. If not found, fall back to `$CLAUDE_PROJECT_DIR/.claude/plugins/codex-reviewer/codex-reviewer.sh`
 
 <SUBAGENT_PROMPT>
 You are a code review context-collection agent. Gather relevant code context based on user arguments, then invoke the Codex review script.
