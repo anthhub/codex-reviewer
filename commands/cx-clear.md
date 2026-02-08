@@ -7,4 +7,4 @@ allowed-tools: Bash
 
 Execute cleanup script to clear review history:
 
-!bash "$CLAUDE_PROJECT_DIR/.claude/plugins/codex-reviewer/hooks/clear-history.sh" $ARGUMENTS
+!bash "$CLAUDE_PROJECT_DIR/.claude/plugins/codex-reviewer/clear-history.sh" $ARGUMENTS

@@ -1,19 +1,16 @@
 # Codex Reviewer
 
-A Claude Code plugin that enables dual AI cross-validation using Codex CLI (GPT-4) as a Senior Reviewer.
+A Claude Code plugin that enables dual AI cross-validation using Codex CLI as a Senior Reviewer.
 
 ## Features
 
+- **Subagent Architecture**: All reviews run in isolated Task subagent, preventing main conversation context overflow
+- **Semantic Review**: Pass natural language to focus Codex on specific concerns (e.g., `/cx check security`)
 - **Dual AI Verification**: Claude Code generates solutions, Codex reviews them
-- **Multiple Review Modes**:
-  - Review all uncommitted changes
-  - Review specific files
-  - Review staged changes only
-  - Review specific commits
-  - Quick review mode (faster, shorter)
-- **Security Hardened**: Input sanitization, secure temp directories, path validation
+- **Quick Mode**: `--quick` flag for faster, shorter reviews
+- **Auto-Invoke**: Claude automatically triggers Codex review based on change scope and risk
+- **Security Hardened**: Input sanitization, secure temp directories
 - **History Tracking**: Saves review history for future reference
-- **Configurable**: Customizable model, timeout, score threshold, and language
 
 ## Installation
 
@@ -25,63 +22,61 @@ A Claude Code plugin that enables dual AI cross-validation using Codex CLI (GPT-
 
 ### Install the Plugin
 
-1. Copy the plugin to your Claude Code plugins directory:
-
 ```bash
-mkdir -p .claude/plugins
-cp -r hooks .claude/plugins/codex-reviewer/
-```
+# Create target directories
+mkdir -p .claude/plugins/codex-reviewer .claude/commands .claude/skills
 
-2. Copy the command files to your project:
-
-```bash
-mkdir -p .claude/commands
+# Copy plugin files
+cp hooks/codex-reviewer.sh hooks/check-health.sh hooks/clear-history.sh .claude/plugins/codex-reviewer/
 cp commands/cx*.md .claude/commands/
+cp -r skills/codex-review .claude/skills/
+cp reviewer.example.json .claude/reviewer.json  # optional
 ```
 
-3. (Optional) Create a configuration file:
+### Verify Installation
 
-```bash
-cp reviewer.example.json .claude/reviewer.json
+```
+/cx-check
 ```
 
 ## Usage
 
-### Commands
+```bash
+/cx                              # Review all uncommitted changes
+/cx --quick                      # Quick review (faster)
+/cx check auth security             # Focused review on auth security
+/cx review error handling        # Focused review on error handling
+/cx --quick check performance        # Quick focused review
+```
+
+All `/cx` calls launch a **subagent** that:
+1. Gets `git diff` and recent commit history
+2. If semantic text provided: searches relevant code files and documentation
+3. Writes context to temp files and calls `codex-reviewer.sh`
+4. Returns structured review result to main conversation
+
+Support commands:
 
 | Command | Description |
 |---------|-------------|
-| `/cx` | Review all uncommitted changes |
-| `/cx <file>` | Review specific file |
-| `/cx --staged` | Review only staged changes |
-| `/cx --quick` | Quick review (faster) |
-| `/cx -c HEAD~1` | Review specific commit |
 | `/cx-history` | View review history |
 | `/cx-clear` | Clear review history |
 | `/cx-check` | Check configuration and dependencies |
 
-### Examples
+## Auto-Invoke Behavior
 
-```bash
-# Review all uncommitted changes
-/cx
+With the `codex-review` skill installed, Claude will **automatically** invoke Codex cross-review when:
 
-# Review a specific file
-/cx src/app.ts
+- Security-related changes (auth, permissions, keys, input validation)
+- 3+ files modified or 100+ lines changed
+- Architecture refactoring
+- Bug fixes or new core features
 
-# Quick review of staged changes
-/cx --staged --quick
-
-# Review the last commit
-/cx -c HEAD~1
-
-# Clear old history (keep last 7 days)
-/cx-clear --days 7
-```
+See `skills/codex-review/SKILL.md` for the full auto-invoke strategy.
 
 ## Configuration
 
-Create `.claude/reviewer.json` in your project root:
+`.claude/reviewer.json`:
 
 ```json
 {
@@ -90,101 +85,43 @@ Create `.claude/reviewer.json` in your project root:
   "scoreThreshold": 85,
   "lang": "en",
   "saveHistory": true,
-  "bypassApproval": true,
-  "contextLines": 50
+  "bypassApproval": true
 }
 ```
 
-### Configuration Options
+Environment variables: `REVIEWER_MODEL`, `REVIEWER_TIMEOUT`, `REVIEWER_SCORE_THRESHOLD`, `REVIEWER_LANG`.
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `model` | `gpt-5.2-codex` | Codex model to use |
-| `timeout` | `300` | Timeout in seconds |
-| `scoreThreshold` | `85` | Minimum score to pass (0-100) |
-| `lang` | `en` | Output language (`en` or `zh-CN`) |
-| `saveHistory` | `true` | Save review history |
-| `bypassApproval` | `true` | Skip Codex approval prompts |
-| `contextLines` | `50` | Lines of context to include |
+## codex-reviewer.sh Parameters
 
-### Environment Variables
-
-You can also configure via environment variables:
-
-```bash
-export REVIEWER_MODEL="gpt-5.2-codex"
-export REVIEWER_TIMEOUT=300
-export REVIEWER_SCORE_THRESHOLD=85
-export REVIEWER_LANG="en"
-```
-
-## Review Output
-
-The reviewer outputs a structured Markdown report:
-
-```markdown
-## Codex Review Result
-
-**Score:** 85/100
-**Verdict:** PASS
-
-### Summary
-[One paragraph summary]
-
-### Risks
-- [Risk items]
-
-### Issues / Bugs
-- [Issue items]
-
-### Security Vulnerabilities
-- [Vulnerability items]
-
-### Suggestions
-- [Suggestion items]
-
-### Must Fix (Blocking)
-- [Blocking issues that must be fixed]
-```
-
-## Scoring Standards
-
-| Score | Rating | Description |
-|-------|--------|-------------|
-| 90-100 | Excellent | Ready to pass |
-| 70-89 | Good | Minor issues, doesn't affect core functionality |
-| 50-69 | Average | Obvious issues need fixing |
-| 0-49 | Poor | Serious issues must be fixed |
-
-A review passes only when:
-- Score >= threshold (default 85)
-- "Must Fix" section is empty
-
-## Security
-
-This plugin implements several security measures:
-
-- **Input Sanitization**: Removes potentially dangerous characters from inputs
-- **Secure Temp Directory**: Uses user-specific temp directory with 700 permissions
-- **Path Validation**: Prevents directory traversal attacks
-- **Commit Validation**: Validates commit hash format before use
+| Parameter | Description |
+|-----------|-------------|
+| `--context-file <path>` | Read context from file (for subagent) |
+| `--changes-file <path>` | Read changes from file (for subagent) |
+| `--user-requirement <text>` | Semantic review focus (included in Codex prompt) |
+| `--context <text>` | Inline context (for direct CLI use) |
+| `--changes <text>` | Inline changes (for direct CLI use) |
+| `--quick` | Quick review mode |
+| `--session-id <id>` | Session identifier |
+| `--cwd <dir>` | Working directory |
 
 ## File Structure
 
 ```
 codex-reviewer/
 ├── hooks/
-│   ├── codex-reviewer.sh    # Core review script
-│   ├── manual-review.sh     # Manual trigger entry point
-│   ├── stop-review.sh       # Stop hook (optional)
-│   ├── clear-history.sh     # History cleanup
-│   └── check-health.sh      # Health check
+│   ├── codex-reviewer.sh    # Core: builds prompt, calls Codex CLI
+│   ├── check-health.sh      # Health check
+│   └── clear-history.sh     # History cleanup
 ├── commands/
-│   ├── cx.md                # Main review command
-│   ├── cx-history.md        # History command
-│   ├── cx-clear.md          # Clear command
-│   └── cx-check.md          # Check command
-├── reviewer.example.json    # Example configuration
+│   ├── cx.md                # /cx command (subagent-based)
+│   ├── cx-history.md        # /cx-history command
+│   ├── cx-clear.md          # /cx-clear command
+│   └── cx-check.md          # /cx-check command
+├── skills/
+│   └── codex-review/
+│       └── SKILL.md         # Auto-invoke strategy for Claude
+├── reviewer.example.json
+├── .gitignore
 └── README.md
 ```
 
