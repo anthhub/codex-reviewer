@@ -63,15 +63,23 @@ if [ -f "$CONFIG_FILE" ]; then
 
     MODEL=$(jq -r '.model // "gpt-5.2-codex"' "$CONFIG_FILE")
     TIMEOUT=$(jq -r '.timeout // 300' "$CONFIG_FILE")
-    THRESHOLD=$(jq -r '.scoreThreshold // 85' "$CONFIG_FILE")
+    ADV_TIMEOUT=$(jq -r '.advancedTimeout // 600' "$CONFIG_FILE")
+    THRESHOLD=$(jq -r '.scoreThreshold // 80' "$CONFIG_FILE")
     LANG=$(jq -r '.lang // "en"' "$CONFIG_FILE")
     HISTORY=$(jq -r '.saveHistory // true' "$CONFIG_FILE")
+    RE_QUICK=$(jq -r '.reasoningEffort.quick // "low"' "$CONFIG_FILE")
+    RE_STD=$(jq -r '.reasoningEffort.standard // "medium"' "$CONFIG_FILE")
+    RE_ADV=$(jq -r '.reasoningEffort.advanced // "high"' "$CONFIG_FILE")
 
     echo "| model | \`$MODEL\` |"
     echo "| timeout | ${TIMEOUT}s |"
+    echo "| advancedTimeout | ${ADV_TIMEOUT}s |"
     echo "| scoreThreshold | $THRESHOLD |"
     echo "| lang | $LANG |"
     echo "| saveHistory | $HISTORY |"
+    echo "| reasoning (quick) | $RE_QUICK |"
+    echo "| reasoning (standard) | $RE_STD |"
+    echo "| reasoning (advanced) | $RE_ADV |"
   else
     echo "❌ JSON syntax: INVALID"
     echo "   Please fix the JSON syntax in $CONFIG_FILE"
@@ -86,9 +94,13 @@ else
   echo "|---------|-------|"
   echo "| model | \`gpt-5.2-codex\` |"
   echo "| timeout | 300s |"
-  echo "| scoreThreshold | 85 |"
+  echo "| advancedTimeout | 600s |"
+  echo "| scoreThreshold | 80 |"
   echo "| lang | en |"
   echo "| saveHistory | true |"
+  echo "| reasoning (quick) | low |"
+  echo "| reasoning (standard) | medium |"
+  echo "| reasoning (advanced) | high |"
 fi
 
 echo ""

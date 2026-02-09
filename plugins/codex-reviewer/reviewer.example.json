@@ -1,9 +1,15 @@
 {
   "model": "gpt-5.2-codex",
   "timeout": 300,
-  "scoreThreshold": 85,
+  "advancedTimeout": 600,
+  "scoreThreshold": 80,
   "lang": "en",
   "saveHistory": true,
   "bypassApproval": true,
-  "contextLines": 50
+  "contextLines": 50,
+  "reasoningEffort": {
+    "quick": "low",
+    "standard": "medium",
+    "advanced": "high"
+  }
 }
